@@ -1,0 +1,18 @@
+# dependencies
+node_modules/
+
+# build outputs
+dist/
+build/
+.next/
+out/
+
+# env & secrets
+.env
+.env.*
+*.key
+*.pem
+
+# logs & system
+*.log
+.DS_Store
