@@ -2,6 +2,7 @@
  * Consultation Page
  * Design: Singapore Futurism - Two consultation options
  * Features: Free consultation form + AI Bot (paid 20 RMB)
+ * Real email verification via Vercel Serverless Functions + Gmail SMTP
  */
 
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,8 @@ import {
   Zap, 
   Clock,
   ArrowLeft,
-  Sparkles
+  Sparkles,
+  AlertCircle
 } from "lucide-react";
 
 type Step = "choose" | "email" | "payment" | "access";
@@ -33,14 +35,13 @@ export default function Consultation() {
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const content = {
     en: {
       pageTitle: "Start Your Consultation",
       pageSubtitle: "Choose the consultation method that works best for you",
-      back: "← Back to Home",
-      
-      // Option 1: Free Consultation
+      back: "Back to Home",
       freeTitle: "Free Consultation",
       freeDesc: "Schedule a one-on-one session with our education consultant",
       freeFeatures: [
@@ -51,8 +52,6 @@ export default function Consultation() {
       ],
       freeCta: "Book Free Session",
       freePrice: "Free",
-      
-      // Option 2: AI Bot
       botTitle: "AI Education Consultant",
       botDesc: "Get instant, professional advice from our AI-powered consultant 24/7",
       botFeatures: [
@@ -65,31 +64,26 @@ export default function Consultation() {
       botCta: "Get Started - ¥20",
       botPrice: "¥20",
       botPriceNote: "One-time payment, unlimited access",
-      
-      // Email step
       emailTitle: "Verify Your Email",
       emailSubtitle: "Enter your email to get started with the AI consultant",
       emailPlaceholder: "your@email.com",
       sendCode: "Send Verification Code",
-      codeSent: "Code sent! Check your inbox",
+      codeSent: "Code sent! Check your inbox (also check spam folder)",
       codePlaceholder: "Enter 6-digit code",
       verifyCode: "Verify",
       verified: "Email Verified!",
-      
-      // Payment step
+      sendingCode: "Sending...",
+      verifying: "Verifying...",
+      resendCode: "Resend Code",
       paymentTitle: "Complete Payment",
       paymentSubtitle: "One-time payment of ¥20 for unlimited AI consultant access",
       payNow: "Pay ¥20 Now",
       paymentSecure: "Secure payment via Stripe",
       paymentNote: "After payment, you'll get immediate access to the AI consultant",
-      
-      // Access step
       accessTitle: "Welcome! Your AI Consultant is Ready",
       accessSubtitle: "Click below to start your consultation session",
       startChat: "Start AI Consultation",
       accessNote: "You can return to this page anytime to access the AI consultant",
-      
-      // Trust badges
       trust1: "Secure & Private",
       trust2: "Instant Access",
       trust3: "24/7 Available"
@@ -97,9 +91,7 @@ export default function Consultation() {
     zh: {
       pageTitle: "开始您的咨询",
       pageSubtitle: "选择最适合您的咨询方式",
-      back: "← 返回首页",
-      
-      // Option 1: Free Consultation
+      back: "返回首页",
       freeTitle: "免费咨询",
       freeDesc: "与我们的教育顾问预约一对一咨询",
       freeFeatures: [
@@ -110,8 +102,6 @@ export default function Consultation() {
       ],
       freeCta: "预约免费咨询",
       freePrice: "免费",
-      
-      // Option 2: AI Bot
       botTitle: "AI 教育顾问",
       botDesc: "全天候获得AI驱动的专业教育咨询建议",
       botFeatures: [
@@ -124,31 +114,26 @@ export default function Consultation() {
       botCta: "立即开通 - ¥20",
       botPrice: "¥20",
       botPriceNote: "一次性付费，无限使用",
-      
-      // Email step
       emailTitle: "验证您的邮箱",
       emailSubtitle: "输入邮箱以开始使用AI顾问",
       emailPlaceholder: "your@email.com",
       sendCode: "发送验证码",
-      codeSent: "验证码已发送！请查看收件箱",
+      codeSent: "验证码已发送！请查看收件箱（也请检查垃圾邮件）",
       codePlaceholder: "输入6位验证码",
       verifyCode: "验证",
       verified: "邮箱验证成功！",
-      
-      // Payment step
+      sendingCode: "发送中...",
+      verifying: "验证中...",
+      resendCode: "重新发送",
       paymentTitle: "完成支付",
       paymentSubtitle: "一次性支付¥20，即可无限使用AI顾问",
       payNow: "立即支付 ¥20",
       paymentSecure: "通过Stripe安全支付",
       paymentNote: "支付完成后，您将立即获得AI顾问的访问权限",
-      
-      // Access step
       accessTitle: "欢迎！您的AI顾问已就绪",
       accessSubtitle: "点击下方按钮开始咨询",
       startChat: "开始AI咨询",
       accessNote: "您可以随时返回此页面访问AI顾问",
-      
-      // Trust badges
       trust1: "安全私密",
       trust2: "即时访问",
       trust3: "全天候可用"
@@ -157,38 +142,65 @@ export default function Consultation() {
 
   const t = content[language];
 
-  const handleSendCode = () => {
+  const handleSendCode = async () => {
     if (!email || !email.includes("@")) return;
     setIsLoading(true);
-    // Simulate sending verification code
-    setTimeout(() => {
-      setIsCodeSent(true);
+    setErrorMsg("");
+    
+    try {
+      const response = await fetch("/api/send-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        setIsCodeSent(true);
+      } else {
+        setErrorMsg(data.error || (language === "en" ? "Failed to send code. Please try again." : "发送失败，请重试。"));
+      }
+    } catch (error) {
+      setErrorMsg(language === "en" ? "Network error. Please try again." : "网络错误，请重试。");
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
-  const handleVerifyCode = () => {
-    if (!verificationCode || verificationCode.length < 4) return;
+  const handleVerifyCode = async () => {
+    if (!verificationCode || verificationCode.length < 6) return;
     setIsLoading(true);
-    // Simulate verification
-    setTimeout(() => {
-      setIsVerified(true);
+    setErrorMsg("");
+    
+    try {
+      const response = await fetch("/api/verify-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code: verificationCode }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.verified) {
+        setIsVerified(true);
+        setTimeout(() => setStep("payment"), 1200);
+      } else {
+        setErrorMsg(data.error || (language === "en" ? "Invalid code. Please try again." : "验证码错误，请重试。"));
+      }
+    } catch (error) {
+      setErrorMsg(language === "en" ? "Network error. Please try again." : "网络错误，请重试。");
+    } finally {
       setIsLoading(false);
-      // Move to payment step after short delay
-      setTimeout(() => setStep("payment"), 1000);
-    }, 1000);
+    }
   };
 
   const handlePayment = () => {
-    // Redirect to Stripe payment link
-    // This will be replaced with actual Stripe payment link
     window.open("https://buy.stripe.com/test_placeholder", "_blank");
-    // For demo, move to access step
     setTimeout(() => setStep("access"), 2000);
   };
 
   const handleAccessBot = () => {
-    // Open ChatGPT Bot in new tab
     window.open("https://chatgpt.com/g/g-6a4b37b569448191ba87fb6040886105-dxeducator-consultant", "_blank");
   };
 
@@ -202,7 +214,6 @@ export default function Consultation() {
       
       <main className="pt-28 pb-20">
         <div className="container mx-auto px-4">
-          {/* Back button */}
           <Link href="/">
             <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8">
               <ArrowLeft className="h-4 w-4" />
@@ -210,7 +221,6 @@ export default function Consultation() {
             </button>
           </Link>
 
-          {/* Page Header */}
           <div className="text-center mb-16">
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
               {t.pageTitle}
@@ -220,28 +230,19 @@ export default function Consultation() {
             </p>
           </div>
 
-          {/* Step: Choose */}
           {step === "choose" && (
             <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-              {/* Option 1: Free Consultation */}
               <div className="relative bg-card border-2 border-border rounded-2xl p-8 hover:border-primary/30 transition-all duration-300 hover:shadow-xl group">
                 <div className="absolute top-4 right-4">
                   <span className="bg-secondary/20 text-secondary px-3 py-1 rounded-full text-sm font-medium">
                     {t.freePrice}
                   </span>
                 </div>
-                
                 <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
                   <MessageCircle className="h-7 w-7 text-primary" />
                 </div>
-                
-                <h2 className="text-2xl font-bold text-card-foreground mb-3">
-                  {t.freeTitle}
-                </h2>
-                <p className="text-muted-foreground mb-6">
-                  {t.freeDesc}
-                </p>
-                
+                <h2 className="text-2xl font-bold text-card-foreground mb-3">{t.freeTitle}</h2>
+                <p className="text-muted-foreground mb-6">{t.freeDesc}</p>
                 <ul className="space-y-3 mb-8">
                   {t.freeFeatures.map((feature, i) => (
                     <li key={i} className="flex items-center gap-3">
@@ -250,7 +251,6 @@ export default function Consultation() {
                     </li>
                   ))}
                 </ul>
-                
                 <Button
                   onClick={scrollToContact}
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 text-lg group-hover:shadow-lg transition-all"
@@ -260,33 +260,23 @@ export default function Consultation() {
                 </Button>
               </div>
 
-              {/* Option 2: AI Bot */}
               <div className="relative bg-card border-2 border-accent/50 rounded-2xl p-8 hover:border-accent transition-all duration-300 hover:shadow-xl shadow-lg group">
-                {/* Popular badge */}
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                   <span className="bg-accent text-accent-foreground px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-1">
                     <Sparkles className="h-4 w-4" />
                     {language === "en" ? "Recommended" : "推荐"}
                   </span>
                 </div>
-                
                 <div className="absolute top-4 right-4">
                   <span className="bg-accent/20 text-accent px-3 py-1 rounded-full text-sm font-bold">
                     {t.botPrice}
                   </span>
                 </div>
-                
                 <div className="w-14 h-14 bg-accent/10 rounded-xl flex items-center justify-center mb-6">
                   <Bot className="h-7 w-7 text-accent" />
                 </div>
-                
-                <h2 className="text-2xl font-bold text-card-foreground mb-3">
-                  {t.botTitle}
-                </h2>
-                <p className="text-muted-foreground mb-6">
-                  {t.botDesc}
-                </p>
-                
+                <h2 className="text-2xl font-bold text-card-foreground mb-3">{t.botTitle}</h2>
+                <p className="text-muted-foreground mb-6">{t.botDesc}</p>
                 <ul className="space-y-3 mb-8">
                   {t.botFeatures.map((feature, i) => (
                     <li key={i} className="flex items-center gap-3">
@@ -295,7 +285,6 @@ export default function Consultation() {
                     </li>
                   ))}
                 </ul>
-                
                 <Button
                   onClick={() => setStep("email")}
                   className="w-full bg-accent hover:bg-accent/90 text-accent-foreground py-6 text-lg group-hover:shadow-lg transition-all"
@@ -303,42 +292,37 @@ export default function Consultation() {
                   {t.botCta}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-                
-                <p className="text-center text-sm text-muted-foreground mt-3">
-                  {t.botPriceNote}
-                </p>
+                <p className="text-center text-sm text-muted-foreground mt-3">{t.botPriceNote}</p>
               </div>
             </div>
           )}
 
-          {/* Step: Email Verification */}
           {step === "email" && (
             <div className="max-w-md mx-auto">
               <div className="bg-card border-2 border-border rounded-2xl p-8 shadow-lg">
                 <div className="w-14 h-14 bg-accent/10 rounded-xl flex items-center justify-center mb-6 mx-auto">
                   <Mail className="h-7 w-7 text-accent" />
                 </div>
+                <h2 className="text-2xl font-bold text-card-foreground text-center mb-2">{t.emailTitle}</h2>
+                <p className="text-muted-foreground text-center mb-8">{t.emailSubtitle}</p>
                 
-                <h2 className="text-2xl font-bold text-card-foreground text-center mb-2">
-                  {t.emailTitle}
-                </h2>
-                <p className="text-muted-foreground text-center mb-8">
-                  {t.emailSubtitle}
-                </p>
+                {errorMsg && (
+                  <div className="flex items-center gap-2 bg-destructive/10 text-destructive px-4 py-3 rounded-lg mb-4">
+                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                    <span className="text-sm">{errorMsg}</span>
+                  </div>
+                )}
                 
                 {!isVerified ? (
                   <div className="space-y-4">
-                    {/* Email input */}
-                    <div>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder={t.emailPlaceholder}
-                        className="w-full px-4 py-3 border-2 border-border rounded-xl bg-background text-foreground focus:border-accent focus:outline-none transition-colors"
-                        disabled={isCodeSent}
-                      />
-                    </div>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder={t.emailPlaceholder}
+                      className="w-full px-4 py-3 border-2 border-border rounded-xl bg-background text-foreground focus:border-accent focus:outline-none transition-colors"
+                      disabled={isCodeSent}
+                    />
                     
                     {!isCodeSent ? (
                       <Button
@@ -346,45 +330,42 @@ export default function Consultation() {
                         disabled={!email || !email.includes("@") || isLoading}
                         className="w-full bg-accent hover:bg-accent/90 text-accent-foreground py-5"
                       >
-                        {isLoading ? (
-                          <span className="animate-pulse">{language === "en" ? "Sending..." : "发送中..."}</span>
-                        ) : (
-                          t.sendCode
-                        )}
+                        {isLoading ? t.sendingCode : t.sendCode}
                       </Button>
                     ) : (
                       <>
                         <p className="text-sm text-secondary font-medium text-center">
                           ✓ {t.codeSent}
                         </p>
-                        
-                        {/* Verification code input */}
                         <input
                           type="text"
                           value={verificationCode}
-                          onChange={(e) => setVerificationCode(e.target.value)}
+                          onChange={(e) => {
+                            setVerificationCode(e.target.value.replace(/\D/g, ""));
+                            setErrorMsg("");
+                          }}
                           placeholder={t.codePlaceholder}
                           className="w-full px-4 py-3 border-2 border-border rounded-xl bg-background text-foreground focus:border-accent focus:outline-none transition-colors text-center text-lg tracking-widest"
                           maxLength={6}
                         />
-                        
                         <Button
                           onClick={handleVerifyCode}
-                          disabled={!verificationCode || verificationCode.length < 4 || isLoading}
+                          disabled={!verificationCode || verificationCode.length < 6 || isLoading}
                           className="w-full bg-accent hover:bg-accent/90 text-accent-foreground py-5"
                         >
-                          {isLoading ? (
-                            <span className="animate-pulse">{language === "en" ? "Verifying..." : "验证中..."}</span>
-                          ) : (
-                            t.verifyCode
-                          )}
+                          {isLoading ? t.verifying : t.verifyCode}
                         </Button>
+                        <button
+                          onClick={() => { setIsCodeSent(false); setVerificationCode(""); setErrorMsg(""); }}
+                          className="w-full text-center text-sm text-accent hover:text-accent/80 transition-colors"
+                        >
+                          {t.resendCode}
+                        </button>
                       </>
                     )}
                     
-                    {/* Back button */}
                     <button
-                      onClick={() => { setStep("choose"); setIsCodeSent(false); setEmail(""); setVerificationCode(""); }}
+                      onClick={() => { setStep("choose"); setIsCodeSent(false); setEmail(""); setVerificationCode(""); setErrorMsg(""); }}
                       className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors mt-4"
                     >
                       {language === "en" ? "← Back to options" : "← 返回选项"}
@@ -402,22 +383,14 @@ export default function Consultation() {
             </div>
           )}
 
-          {/* Step: Payment */}
           {step === "payment" && (
             <div className="max-w-md mx-auto">
               <div className="bg-card border-2 border-border rounded-2xl p-8 shadow-lg">
                 <div className="w-14 h-14 bg-accent/10 rounded-xl flex items-center justify-center mb-6 mx-auto">
                   <Shield className="h-7 w-7 text-accent" />
                 </div>
-                
-                <h2 className="text-2xl font-bold text-card-foreground text-center mb-2">
-                  {t.paymentTitle}
-                </h2>
-                <p className="text-muted-foreground text-center mb-8">
-                  {t.paymentSubtitle}
-                </p>
-                
-                {/* Payment summary */}
+                <h2 className="text-2xl font-bold text-card-foreground text-center mb-2">{t.paymentTitle}</h2>
+                <p className="text-muted-foreground text-center mb-8">{t.paymentSubtitle}</p>
                 <div className="bg-muted/50 rounded-xl p-4 mb-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -432,26 +405,17 @@ export default function Consultation() {
                     {language === "en" ? "Unlimited access • No subscription" : "无限使用 • 无需订阅"}
                   </p>
                 </div>
-                
                 <Button
                   onClick={handlePayment}
                   className="w-full bg-accent hover:bg-accent/90 text-accent-foreground py-6 text-lg shadow-lg hover:shadow-xl transition-all"
                 >
                   {t.payNow}
                 </Button>
-                
                 <div className="flex items-center justify-center gap-2 mt-4">
                   <Shield className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    {t.paymentSecure}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t.paymentSecure}</p>
                 </div>
-                
-                <p className="text-center text-sm text-muted-foreground mt-3">
-                  {t.paymentNote}
-                </p>
-                
-                {/* Back button */}
+                <p className="text-center text-sm text-muted-foreground mt-3">{t.paymentNote}</p>
                 <button
                   onClick={() => setStep("choose")}
                   className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors mt-6"
@@ -462,21 +426,14 @@ export default function Consultation() {
             </div>
           )}
 
-          {/* Step: Access */}
           {step === "access" && (
             <div className="max-w-md mx-auto">
               <div className="bg-card border-2 border-secondary/50 rounded-2xl p-8 shadow-lg">
                 <div className="w-14 h-14 bg-secondary/20 rounded-xl flex items-center justify-center mb-6 mx-auto">
                   <Sparkles className="h-7 w-7 text-secondary" />
                 </div>
-                
-                <h2 className="text-2xl font-bold text-card-foreground text-center mb-2">
-                  {t.accessTitle}
-                </h2>
-                <p className="text-muted-foreground text-center mb-8">
-                  {t.accessSubtitle}
-                </p>
-                
+                <h2 className="text-2xl font-bold text-card-foreground text-center mb-2">{t.accessTitle}</h2>
+                <p className="text-muted-foreground text-center mb-8">{t.accessSubtitle}</p>
                 <Button
                   onClick={handleAccessBot}
                   className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground py-6 text-lg shadow-lg hover:shadow-xl transition-all"
@@ -484,15 +441,11 @@ export default function Consultation() {
                   <Bot className="mr-2 h-5 w-5" />
                   {t.startChat}
                 </Button>
-                
-                <p className="text-center text-sm text-muted-foreground mt-4">
-                  {t.accessNote}
-                </p>
+                <p className="text-center text-sm text-muted-foreground mt-4">{t.accessNote}</p>
               </div>
             </div>
           )}
 
-          {/* Trust Badges */}
           <div className="flex flex-wrap justify-center gap-8 mt-16">
             <div className="flex items-center gap-2 text-muted-foreground">
               <Shield className="h-5 w-5" />
