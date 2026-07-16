@@ -36,6 +36,8 @@ export default function Consultation() {
   const [isVerified, setIsVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [codeHash, setCodeHash] = useState("");
+  const [codeExpires, setCodeExpires] = useState(0);
 
   const content = {
     en: {
@@ -158,6 +160,8 @@ export default function Consultation() {
       
       if (response.ok && data.success) {
         setIsCodeSent(true);
+        setCodeHash(data.codeHash);
+        setCodeExpires(data.expires);
       } else {
         setErrorMsg(data.error || (language === "en" ? "Failed to send code. Please try again." : "发送失败，请重试。"));
       }
@@ -177,7 +181,7 @@ export default function Consultation() {
       const response = await fetch("/api/verify-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code: verificationCode }),
+        body: JSON.stringify({ email, code: verificationCode, codeHash, expires: codeExpires }),
       });
       
       const data = await response.json();

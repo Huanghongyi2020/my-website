@@ -1,11 +1,14 @@
 import nodemailer from "nodemailer";
+import crypto from "crypto";
 
-// In-memory store for verification codes (will reset on cold starts)
-// For production, use a database like Redis or Vercel KV
-const codes = new Map();
+// Hash the code with email as salt for secure client-side storage
+function hashCode(email, code) {
+  return crypto.createHmac("sha256", process.env.GMAIL_APP_PASSWORD || "secret")
+    .update(email + ":" + code)
+    .digest("hex");
+}
 
 export default async function handler(req, res) {
-  // CORS headers
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -27,14 +30,9 @@ export default async function handler(req, res) {
   // Generate 6-digit code
   const code = Math.floor(100000 + Math.random() * 900000).toString();
 
-  // Store code with expiration (10 minutes)
-  codes.set(email, {
-    code,
-    expires: Date.now() + 10 * 60 * 1000,
-  });
-
-  // Make codes accessible to verify endpoint via global
-  globalThis.__verificationCodes = codes;
+  // Create a hash of the code (to be stored client-side for verification)
+  const codeHash = hashCode(email, code);
+  const expires = Date.now() + 10 * 60 * 1000; // 10 minutes
 
   // Create transporter with Gmail SMTP
   const transporter = nodemailer.createTransport({
@@ -45,7 +43,6 @@ export default async function handler(req, res) {
     },
   });
 
-  // Email content
   const mailOptions = {
     from: `"SIEGLOBE Education" <${process.env.GMAIL_USER}>`,
     to: email,
@@ -82,7 +79,14 @@ export default async function handler(req, res) {
 
   try {
     await transporter.sendMail(mailOptions);
-    return res.status(200).json({ success: true, message: "Code sent" });
+    // Return the hash and expiration to the client
+    // The client will send these back with the code for verification
+    return res.status(200).json({ 
+      success: true, 
+      message: "Code sent",
+      codeHash,
+      expires
+    });
   } catch (error) {
     console.error("Email send error:", error);
     return res.status(500).json({ error: "Failed to send email" });
