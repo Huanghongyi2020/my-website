@@ -67,7 +67,7 @@ export default function Hero() {
           <div className="flex flex-col sm:flex-row gap-4">
             <Button
               size="lg"
-              onClick={() => scrollToSection("contact")}
+              onClick={() => window.location.href = '/consultation'}
               className="bg-accent text-accent-foreground hover:bg-accent/90 shadow-strong hover:shadow-glow text-lg px-8 py-6 group"
             >
               {t("hero.cta.primary")}

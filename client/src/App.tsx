@@ -18,6 +18,7 @@ import MariaSantosStory from "./pages/success-stories/MariaSantos";
 import RajPatelStory from "./pages/success-stories/RajPatel";
 import ZixianStory from "./pages/success-stories/Zixian";
 import LiYishanStory from "./pages/success-stories/LiYishan";
+import Consultation from "./pages/Consultation";
 
 function Router() {
   return (
@@ -34,6 +35,7 @@ function Router() {
       <Route path={"/success-stories/raj-patel"} component={RajPatelStory} />
       <Route path={"/success-stories/zixian"} component={ZixianStory} />
       <Route path={"/success-stories/li-yishan"} component={LiYishanStory} />
+      <Route path={"/consultation"} component={Consultation} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

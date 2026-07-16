@@ -89,10 +89,10 @@ export default function Navigation() {
             </Button>
 
             <Button
-              onClick={() => window.open('https://bot.sieglobe.com', '_blank')}
+              onClick={() => window.location.href = '/consultation'}
               className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-md hover:shadow-lg transition-all"
             >
-              {language === 'en' ? '🤖 AI Bot Consultation' : '🤖 AI 咨询机器人'}
+              {t("hero.cta.primary")}
             </Button>
           </div>
 
