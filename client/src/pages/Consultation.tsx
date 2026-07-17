@@ -203,7 +203,7 @@ export default function Consultation() {
         setIsVerified(true);
         // Log verified email to Google Sheets
         try {
-          await fetch("https://script.google.com/macros/s/AKfycbzRJZozBgM64CswLZ0GXth1_VvMPmCp8eTiWj_vpjoekNRuxa2d6kIjY-n4mKtuM-PAlA/exec", {
+          await fetch("https://script.google.com/macros/s/AKfycbwOfkQlDPdPdPix2ea7VJZzpQKznYtf3i6WgyzGQiE5u8yzQyVpRinlCRRCrugGFMqzwA/exec", {
             method: "POST",
             mode: "no-cors",
             headers: { "Content-Type": "application/json" },
@@ -232,7 +232,7 @@ export default function Consultation() {
     setIsCheckingAccess(true);
     setErrorMsg("");
     try {
-      const res = await fetch(`https://script.google.com/macros/s/AKfycbzRJZozBgM64CswLZ0GXth1_VvMPmCp8eTiWj_vpjoekNRuxa2d6kIjY-n4mKtuM-PAlA/exec?email=${encodeURIComponent(email)}`);
+      const res = await fetch(`https://script.google.com/macros/s/AKfycbwOfkQlDPdPdPix2ea7VJZzpQKznYtf3i6WgyzGQiE5u8yzQyVpRinlCRRCrugGFMqzwA/exec?email=${encodeURIComponent(email)}`);
       const data = await res.json();
       if (data.hasAccess) {
         setStep("access");
