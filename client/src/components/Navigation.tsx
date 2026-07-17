@@ -25,6 +25,9 @@ export default function Navigation() {
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
+    } else {
+      // If section doesn't exist on current page, navigate to homepage with hash
+      window.location.href = `/#${id}`;
     }
   };
 

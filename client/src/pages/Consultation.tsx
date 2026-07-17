@@ -78,10 +78,10 @@ export default function Consultation() {
       verifying: "Verifying...",
       resendCode: "Resend Code",
       paymentTitle: "Complete Payment",
-      paymentSubtitle: "One-time payment of ¥20 for unlimited AI consultant access",
-      payNow: "Pay ¥20 Now",
-      paymentSecure: "Secure payment via Stripe",
-      paymentNote: "After payment, you'll get immediate access to the AI consultant",
+      paymentSubtitle: "Scan the WeChat QR code below to pay ¥20",
+      payNow: "I've Completed Payment",
+      paymentSecure: "Scan with WeChat to pay",
+      paymentNote: "After payment, click the button above to access the AI consultant. Your access will be confirmed within 24 hours.",
       accessTitle: "Welcome! Your AI Consultant is Ready",
       accessSubtitle: "Click below to start your consultation session",
       startChat: "Start AI Consultation",
@@ -128,10 +128,10 @@ export default function Consultation() {
       verifying: "验证中...",
       resendCode: "重新发送",
       paymentTitle: "完成支付",
-      paymentSubtitle: "一次性支付¥20，即可无限使用AI顾问",
-      payNow: "立即支付 ¥20",
-      paymentSecure: "通过Stripe安全支付",
-      paymentNote: "支付完成后，您将立即获得AI顾问的访问权限",
+      paymentSubtitle: "请使用微信扫描下方二维码支付¥20",
+      payNow: "我已完成支付",
+      paymentSecure: "使用微信扫码支付",
+      paymentNote: "支付完成后，点击上方按钮访问AI顾问。您的访问权限将在24小时内确认。",
       accessTitle: "欢迎！您的AI顾问已就绪",
       accessSubtitle: "点击下方按钮开始咨询",
       startChat: "开始AI咨询",
@@ -200,8 +200,7 @@ export default function Consultation() {
   };
 
   const handlePayment = () => {
-    window.open("https://buy.stripe.com/test_placeholder", "_blank");
-    setTimeout(() => setStep("access"), 2000);
+    setStep("access");
   };
 
   const handleAccessBot = () => {
@@ -394,7 +393,24 @@ export default function Consultation() {
                   <Shield className="h-7 w-7 text-accent" />
                 </div>
                 <h2 className="text-2xl font-bold text-card-foreground text-center mb-2">{t.paymentTitle}</h2>
-                <p className="text-muted-foreground text-center mb-8">{t.paymentSubtitle}</p>
+                <p className="text-muted-foreground text-center mb-6">{t.paymentSubtitle}</p>
+                
+                {/* WeChat QR Code */}
+                <div className="bg-white rounded-xl p-4 mb-6 border border-border">
+                  <img 
+                    src="/wechat-pay-qr.webp" 
+                    alt="WeChat Pay QR Code" 
+                    className="w-full max-w-[280px] mx-auto rounded-lg"
+                  />
+                  <div className="text-center mt-3">
+                    <p className="text-sm font-medium text-green-600 flex items-center justify-center gap-1">
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-7.062-6.122zm-2.036 2.84c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982z"/></svg>
+                      {language === "en" ? "WeChat Pay" : "微信支付"}
+                    </p>
+                    <p className="text-lg font-bold text-foreground mt-1">¥20.00</p>
+                  </div>
+                </div>
+
                 <div className="bg-muted/50 rounded-xl p-4 mb-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
