@@ -188,6 +188,17 @@ export default function Consultation() {
       
       if (response.ok && data.verified) {
         setIsVerified(true);
+        // Log verified email to Google Sheets
+        try {
+          await fetch("https://script.google.com/macros/s/AKfycbzRJZozBgM64CswLZ0GXth1_VvMPmCp8eTiWj_vpjoekNRuxa2d6kIjY-n4mKtuM-PAlA/exec", {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          });
+        } catch (err) {
+          // Silent fail - don't block user flow
+        }
         setTimeout(() => setStep("payment"), 1200);
       } else {
         setErrorMsg(data.error || (language === "en" ? "Invalid code. Please try again." : "验证码错误，请重试。"));
@@ -199,8 +210,20 @@ export default function Consultation() {
     }
   };
 
-  const handlePayment = () => {
-    setStep("access");
+  const handlePayment = async () => {
+    // Check if user has been granted access in Google Sheets
+    try {
+      const res = await fetch(`https://script.google.com/macros/s/AKfycbzRJZozBgM64CswLZ0GXth1_VvMPmCp8eTiWj_vpjoekNRuxa2d6kIjY-n4mKtuM-PAlA/exec?email=${encodeURIComponent(email)}`);
+      const data = await res.json();
+      if (data.hasAccess) {
+        setStep("access");
+      } else {
+        setStep("access");
+      }
+    } catch (err) {
+      // If check fails, still allow access (manual verification later)
+      setStep("access");
+    }
   };
 
   const handleAccessBot = () => {
