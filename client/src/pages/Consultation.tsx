@@ -25,7 +25,7 @@ import {
   AlertCircle
 } from "lucide-react";
 
-type Step = "choose" | "email" | "payment" | "access";
+type Step = "choose" | "email" | "payment" | "pending" | "access";
 
 export default function Consultation() {
   const { language } = useLanguage();
@@ -38,6 +38,7 @@ export default function Consultation() {
   const [errorMsg, setErrorMsg] = useState("");
   const [codeHash, setCodeHash] = useState("");
   const [codeExpires, setCodeExpires] = useState(0);
+  const [isCheckingAccess, setIsCheckingAccess] = useState(false);
 
   const content = {
     en: {
@@ -86,6 +87,12 @@ export default function Consultation() {
       accessSubtitle: "Click below to start your consultation session",
       startChat: "Start AI Consultation",
       accessNote: "You can return to this page anytime to access the AI consultant",
+      pendingTitle: "Payment Pending Confirmation",
+      pendingSubtitle: "We've received your request. Your access will be activated once payment is confirmed by our team.",
+      pendingNote: "This usually takes less than 24 hours. You'll be able to access the AI consultant once confirmed.",
+      checkAgain: "Check Access Status",
+      checking: "Checking...",
+      notYetApproved: "Access not yet approved. Please wait for payment confirmation.",
       trust1: "Secure & Private",
       trust2: "Instant Access",
       trust3: "24/7 Available"
@@ -136,6 +143,12 @@ export default function Consultation() {
       accessSubtitle: "点击下方按钮开始咨询",
       startChat: "开始AI咨询",
       accessNote: "您可以随时返回此页面访问AI顾问",
+      pendingTitle: "支付待确认",
+      pendingSubtitle: "我们已收到您的请求。支付确认后将为您开通访问权限。",
+      pendingNote: "通常在24小时内完成确认。确认后您即可访问AI顾问。",
+      checkAgain: "检查访问状态",
+      checking: "检查中...",
+      notYetApproved: "访问权限尚未开通，请等待支付确认。",
       trust1: "安全私密",
       trust2: "即时访问",
       trust3: "全天候可用"
@@ -210,19 +223,26 @@ export default function Consultation() {
     }
   };
 
-  const handlePayment = async () => {
-    // Check if user has been granted access in Google Sheets
+  const handlePayment = () => {
+    // User claims they paid - move to pending state
+    setStep("pending");
+  };
+
+  const handleCheckAccess = async () => {
+    setIsCheckingAccess(true);
+    setErrorMsg("");
     try {
       const res = await fetch(`https://script.google.com/macros/s/AKfycbzRJZozBgM64CswLZ0GXth1_VvMPmCp8eTiWj_vpjoekNRuxa2d6kIjY-n4mKtuM-PAlA/exec?email=${encodeURIComponent(email)}`);
       const data = await res.json();
       if (data.hasAccess) {
         setStep("access");
       } else {
-        setStep("access");
+        setErrorMsg(language === "en" ? t.notYetApproved : t.notYetApproved);
       }
     } catch (err) {
-      // If check fails, still allow access (manual verification later)
-      setStep("access");
+      setErrorMsg(language === "en" ? "Network error. Please try again." : "网络错误，请重试。");
+    } finally {
+      setIsCheckingAccess(false);
     }
   };
 
@@ -459,6 +479,47 @@ export default function Consultation() {
                   <p className="text-sm text-muted-foreground">{t.paymentSecure}</p>
                 </div>
                 <p className="text-center text-sm text-muted-foreground mt-3">{t.paymentNote}</p>
+                <button
+                  onClick={() => setStep("choose")}
+                  className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors mt-6"
+                >
+                  {language === "en" ? "← Back to options" : "← 返回选项"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === "pending" && (
+            <div className="max-w-md mx-auto">
+              <div className="bg-card border-2 border-amber-300/50 rounded-2xl p-8 shadow-lg">
+                <div className="w-14 h-14 bg-amber-100 rounded-xl flex items-center justify-center mb-6 mx-auto">
+                  <Clock className="h-7 w-7 text-amber-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-card-foreground text-center mb-2">{t.pendingTitle}</h2>
+                <p className="text-muted-foreground text-center mb-6">{t.pendingSubtitle}</p>
+                
+                {errorMsg && (
+                  <div className="flex items-center gap-2 bg-amber-50 text-amber-700 px-4 py-3 rounded-lg mb-4 border border-amber-200">
+                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                    <span className="text-sm">{errorMsg}</span>
+                  </div>
+                )}
+
+                <div className="bg-muted/50 rounded-xl p-4 mb-6">
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-sm text-card-foreground">{email}</span>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleCheckAccess}
+                  disabled={isCheckingAccess}
+                  className="w-full bg-amber-500 hover:bg-amber-600 text-white py-6 text-lg shadow-lg hover:shadow-xl transition-all"
+                >
+                  {isCheckingAccess ? t.checking : t.checkAgain}
+                </Button>
+                <p className="text-center text-sm text-muted-foreground mt-4">{t.pendingNote}</p>
                 <button
                   onClick={() => setStep("choose")}
                   className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors mt-6"
