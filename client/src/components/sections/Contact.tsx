@@ -128,8 +128,9 @@ export default function Contact() {
                   name="message"
                   value={formData.message}
                   onChange={handleChange}
+                  placeholder={t("contact.messagePlaceholder")}
                   required
-                  rows={5}
+                  rows={7}
                   className="w-full"
                 />
               </div>
