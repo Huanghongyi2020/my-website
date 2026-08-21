@@ -17,6 +17,7 @@ export default function Contact() {
     name: "",
     email: "",
     phone: "",
+    wechatId: "",
     message: "",
   });
 
@@ -42,7 +43,7 @@ export default function Contact() {
       
       if (result.success) {
         toast.success("Message sent! We'll contact you soon.");
-        setFormData({ name: "", email: "", phone: "", message: "" });
+        setFormData({ name: "", email: "", phone: "", wechatId: "", message: "" });
       } else {
         toast.error("Failed to send message. Please try again.");
       }
@@ -116,6 +117,19 @@ export default function Contact() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
+                  className="w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-card-foreground mb-2">
+                  {t("contact.wechatId")}
+                </label>
+                <Input
+                  name="wechatId"
+                  value={formData.wechatId}
+                  onChange={handleChange}
+                  placeholder={t("contact.wechatIdPlaceholder")}
                   className="w-full"
                 />
               </div>
