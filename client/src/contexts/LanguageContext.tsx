@@ -137,7 +137,7 @@ const translations: Record<Language, Record<string, string>> = {
     
     // Contact
     "contact.title": "Get Your Free Singapore Study Plan",
-    "contact.subtitle": "Fill in 3 minutes, receive a personalized preliminary assessment for your Singapore education journey",
+    "contact.subtitle": "Complete a 3-minute assessment and receive a personalized preliminary study plan from our education consultants.",
     "contact.name": "Your Name",
     "contact.email": "Email Address",
     "contact.phone": "Phone Number",
@@ -279,8 +279,8 @@ const translations: Record<Language, Record<string, string>> = {
     "faq.a4": "大多数课程要求雅思6.5+或托福90+。一些大学为需要额外准备的学生提供英语能力课程。",
     
     // Contact
-    "contact.title": "3分钟填写信息，免费获取新加坡升学方案初步诊断",
-    "contact.subtitle": "填写以下信息，我们的教育顾问将为您量身定制升学方案",
+    "contact.title": "免费获取新加坡升学方案初步诊断",
+    "contact.subtitle": "3分钟填写学生基本情况，由教育顾问为您分析升学路径、院校方向及下一步规划。",
     "contact.name": "您的姓名",
     "contact.email": "电子邮箱",
     "contact.phone": "电话号码",
