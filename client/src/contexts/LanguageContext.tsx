@@ -136,8 +136,8 @@ const translations: Record<Language, Record<string, string>> = {
     "faq.a4": "Most programs require IELTS 6.5+ or TOEFL 90+. Some universities offer English proficiency courses for students who need additional preparation.",
     
     // Contact
-    "contact.title": "Start Your Journey Today",
-    "contact.subtitle": "Get in touch for a free consultation",
+    "contact.title": "Get Your Free Singapore Study Plan",
+    "contact.subtitle": "Fill in 3 minutes, receive a personalized preliminary assessment for your Singapore education journey",
     "contact.name": "Your Name",
     "contact.email": "Email Address",
     "contact.phone": "Phone Number",
@@ -279,8 +279,8 @@ const translations: Record<Language, Record<string, string>> = {
     "faq.a4": "大多数课程要求雅思6.5+或托福90+。一些大学为需要额外准备的学生提供英语能力课程。",
     
     // Contact
-    "contact.title": "今天开始您的旅程",
-    "contact.subtitle": "联系我们获取免费咨询",
+    "contact.title": "3分钟填写信息，免费获取新加坡升学方案初步诊断",
+    "contact.subtitle": "填写以下信息，我们的教育顾问将为您量身定制升学方案",
     "contact.name": "您的姓名",
     "contact.email": "电子邮箱",
     "contact.phone": "电话号码",
