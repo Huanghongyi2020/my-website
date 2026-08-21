@@ -251,12 +251,7 @@ export default function Consultation() {
   };
 
   const scrollToContact = () => {
-    window.location.href = "/";
-    setTimeout(() => {
-      window.location.hash = "contact";
-      const el = document.getElementById("contact");
-      if (el) el.scrollIntoView({ behavior: "smooth" });
-    }, 500);
+    window.location.href = "/#contact";
   };
 
   return (
